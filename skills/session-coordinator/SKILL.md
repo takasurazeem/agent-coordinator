@@ -145,8 +145,9 @@ When the `kanban` MCP tools resolve (load them as in `/coordinator` section 8), 
 sessions' work too.
 
 **First, find this repo's project.** Each board project lists the code repos it belongs to.
-- Run `git remote get-url origin` (or use the folder name when there's no remote), and call
-  `find_project` with it.
+- Get the repo's remote with `git remote get-url origin`, or the first remote `git remote` lists
+  if there's no `origin`, and call `find_project` with it. With no remote, or no match, try the
+  folder name too.
 - **One match**: work in that project. **Several**: ask which. **None**: ask the user whether to
   `create_project` linked to this repo, or `link_repo` it to an existing project from
   `list_projects`. Never create or link one silently.
