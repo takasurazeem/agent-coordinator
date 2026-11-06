@@ -1,0 +1,15 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "agent-coordinator",
+  "description": "Coordinator skills for Claude Code",
+  "owner": { "name": "takasurazeem" },
+  "plugins": [
+    {
+      "name": "agent-coordinator",
+      "description": "Split a task, rank each piece, delegate to background agents, steerable sessions or external agent CLIs, review, verify and report.",
+      "source": "./",
+      "category": "productivity",
+      "homepage": "https://github.com/takasurazeem/agent-coordinator"
+    }
+  ]
+}
