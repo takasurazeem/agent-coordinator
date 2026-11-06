@@ -148,11 +148,22 @@ If a claim doesn't hold, send it back to the author with what you saw.
 
 ## 8. Working from the kanban board
 
-Load `select:mcp__kanban__next_item,mcp__kanban__claim_item,mcp__kanban__report_progress,mcp__kanban__create_item,mcp__kanban__comment`.
-If they resolve (an Agentic Kanban board is connected), the board is the queue:
+Load `select:mcp__kanban__find_project,mcp__kanban__create_project,mcp__kanban__link_repo,mcp__kanban__list_projects,mcp__kanban__next_item,mcp__kanban__claim_item,mcp__kanban__report_progress,mcp__kanban__create_item,mcp__kanban__comment`.
+If they resolve (an Agentic Kanban board is connected), the board is the queue.
 
-1. Take the item the user named, or `next_item` (add `include_todo: true` to consider unassigned Todo
-   items). `list_items` filters by status **id** (e.g. `todo`), not the column name.
+**First, find this repo's project.** Each board project lists the code repos it belongs to.
+- Run `git remote get-url origin` (or use the folder name when there's no remote), and call
+  `find_project` with it.
+- **One match**: work in that project. **Several**: ask which. **None**: ask the user whether to
+  `create_project` linked to this repo, or `link_repo` it to an existing project from
+  `list_projects`. Never create or link one silently.
+- If the user names a project, use it. If this repo wasn't linked to it yet, offer to `link_repo` it.
+- When the repo you're in isn't the code the item is about, use the item's project's repos instead.
+- If the kanban tools don't resolve, or calls fail to connect, the board isn't reachable. Say so
+  once and carry on without it.
+
+1. Take the item the user named, or `next_item` with `project` set to this repo's project (add
+   `include_todo: true` to consider unassigned Todo items). `list_items` filters by status **id** (e.g. `todo`), not the column name.
    `claim_item` it with a one-line plan.
 2. **Only you change the item's state.** Every MCP process acts as the same actor (`KANBAN_AGENT`,
    default `claude`), so a subagent calling `report_progress` with `needs_review` would move *your*

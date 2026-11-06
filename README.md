@@ -47,10 +47,20 @@ code on your machine.
 
 ### Kanban board (optional)
 
-If an [Open Agentic Kanban](https://github.com/takasurazeem/open-agentic-kanban) board is
-connected through its MCP server, the coordinator takes work from the board's queue and posts
-progress to it. It also gives each session its own item. It never marks items Done; you approve
-them.
+The skills can work with an [Open Agentic Kanban](https://github.com/takasurazeem/open-agentic-kanban)
+board from any repo:
+- Each board project lists the repos it belongs to.
+- In a repo, the coordinator looks up that repo's project from its git remote. If none is linked,
+  it asks whether to create one or link the repo to an existing project.
+- It takes work from that project's queue, gives each session its own item, and posts progress.
+- It never marks items Done; you approve them.
+
+To make the board available in every repo, register its MCP server for your user rather than one
+project:
+
+```bash
+claude mcp add --scope user kanban -e KANBAN_URL=http://localhost:5173 -e KANBAN_AGENT=claude -- node /path/to/open-agentic-kanban/server/mcp.mjs
+```
 
 ## Install
 

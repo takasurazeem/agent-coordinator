@@ -141,15 +141,28 @@ Each session's work stays on its own branch. Nothing is in your checkout until i
 
 ## 7. Working from the kanban board
 
-When the `kanban` MCP tools resolve, the board shows the sessions' work too:
+When the `kanban` MCP tools resolve (load them as in `/coordinator` section 8), the board shows the
+sessions' work too.
 
-1. Take the item the user named (or `next_item`, with `include_todo: true` for Todo items) and
+**First, find this repo's project.** Each board project lists the code repos it belongs to.
+- Run `git remote get-url origin` (or use the folder name when there's no remote), and call
+  `find_project` with it.
+- **One match**: work in that project. **Several**: ask which. **None**: ask the user whether to
+  `create_project` linked to this repo, or `link_repo` it to an existing project from
+  `list_projects`. Never create or link one silently.
+- If the user names a project, use it. If this repo wasn't linked to it yet, offer to `link_repo` it.
+- When the repo you're in isn't the code the item is about, use the item's project's repos instead.
+- If the kanban tools don't resolve, or calls fail to connect, the board isn't reachable. Say so
+  once and carry on without it.
+
+1. Take the item the user named (or `next_item` with `project` set to this repo's project, and
+   `include_todo: true` for Todo items) and
    `claim_item` it with the plan.
 2. Give each session its **own item**: `create_item` with `Parent: #N` and the brief in the body,
    unassigned. Tell the session to `claim_item` it first and `report_progress` on that item only
    (with `branch` when it has one, `blocked` + question when stuck, `needs_review` when done).
    Every session acts as the same board actor (`KANBAN_AGENT`), so a session must never touch the
-   parent item.
+   parent item. A session in another repo uses the same project: give it the project id in the brief.
 3. You own the parent: post a summary as sessions finish; `needs_review` when everything is in.
    Never mark items done; the human approves.
 
