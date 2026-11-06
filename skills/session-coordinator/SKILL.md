@@ -28,7 +28,37 @@ Judgment calls and outward-facing actions stay with you, as in `/coordinator`. A
 open a PR or merge only if the brief says the user already approved that exact step.
 
 Before first use, load the deferred tools with ToolSearch, e.g.
-`select:mcp__ccd_session__start_session,mcp__ccd_session_mgmt__list_sessions,mcp__ccd_session_mgmt__get_session,SendMessage,mcp__kanban__create_item,mcp__kanban__report_progress,mcp__kanban__claim_item`.
+`select:mcp__ccd_session__start_session,mcp__ccd_session_mgmt__list_sessions,mcp__ccd_session_mgmt__get_session,SendMessage`, plus the board tools in step 0.
+
+## 0. Board first (before planning or dispatching anything)
+
+Do this as soon as the skill starts, in the same message as your first other tool call. It is not
+an optional last step.
+
+1. Load the board tools: `select:mcp__kanban__find_project,mcp__kanban__create_project,mcp__kanban__link_repo,mcp__kanban__list_projects,mcp__kanban__next_item,mcp__kanban__claim_item,mcp__kanban__report_progress,mcp__kanban__create_item,mcp__kanban__comment`.
+   - If they don't resolve, or the first call fails to connect, there's no board. Say so in one line
+     and skip the rest of this step. That's the only way to skip it.
+2. **Find this repo's project.** Each board project lists the code repos it belongs to.
+   - Get the remote with `git remote get-url origin`, or the first remote `git remote` lists if
+     there's no `origin`. Call `find_project` with it. With no remote, or no match, try the folder
+     name too.
+   - **The user named or linked a project** (a board URL like `#/<project>/board` counts): use it.
+     If this repo isn't linked to it, offer to `link_repo` it.
+   - **One match**: use it. **Several**: ask which one.
+   - **None**: ask with a choice: create a project for this repo (`create_project`, linked), or link
+     the repo to an existing one (`link_repo`, from `list_projects`). "Add it to the board" means
+     yes to putting the work on the board, not a choice of project. If which project is unclear,
+     ask. Never create or link one silently.
+3. Take or create the item:
+   - The user named an item: use it.
+   - Otherwise check `next_item` for this project. If nothing fits, `create_item` with the user's
+     request as the title and body.
+   - `claim_item` it with a one-line plan.
+4. After you've planned the split (section 1), create one item per task, with `Parent: #N` in the
+   body, **before** that task's agent or session starts.
+
+**Gate:** no agent or session starts until its item exists on the board, unless step 1 found no
+board. If you notice you skipped this, stop and do it now, then tell the user.
 
 ## 1. Plan the split
 
@@ -40,7 +70,8 @@ Before first use, load the deferred tools with ToolSearch, e.g.
    terminal's title, what it does, rank, model, effort, and provider for external models.
    **Budget gate**: with more than 3 sessions, or any on your top model at high effort, wait for
    their go-ahead before starting.
-4. Put the plan on your task list, one step per session, with the step's `session` set to its name.
+4. Put the plan on your task list, one step per session, with the step's `session` set to its name,
+   and one board item per session (step 0.4).
 
 ## 2. Start the sessions
 
@@ -141,24 +172,11 @@ Each session's work stays on its own branch. Nothing is in your checkout until i
 
 ## 7. Working from the kanban board
 
-When the `kanban` MCP tools resolve (load them as in `/coordinator` section 8), the board shows the
-sessions' work too.
+When step 0 found a board, it shows the sessions' work too.
 
-**First, find this repo's project.** Each board project lists the code repos it belongs to.
-- Get the repo's remote with `git remote get-url origin`, or the first remote `git remote` lists
-  if there's no `origin`, and call `find_project` with it. With no remote, or no match, try the
-  folder name too.
-- **One match**: work in that project. **Several**: ask which. **None**: ask the user whether to
-  `create_project` linked to this repo, or `link_repo` it to an existing project from
-  `list_projects`. Never create or link one silently.
-- If the user names a project, use it. If this repo wasn't linked to it yet, offer to `link_repo` it.
-- When the repo you're in isn't the code the item is about, use the item's project's repos instead.
-- If the kanban tools don't resolve, or calls fail to connect, the board isn't reachable. Say so
-  once and carry on without it.
+The project and the parent item come from step 0. From there:
 
-1. Take the item the user named (or `next_item` with `project` set to this repo's project, and
-   `include_todo: true` for Todo items) and
-   `claim_item` it with the plan.
+1. The parent item is the one step 0 claimed.
 2. Give each session its **own item**: `create_item` with `Parent: #N` and the brief in the body,
    unassigned. Tell the session to `claim_item` it first and `report_progress` on that item only
    (with `branch` when it has one, `blocked` + question when stuck, `needs_review` when done).

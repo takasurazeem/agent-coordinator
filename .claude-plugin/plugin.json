@@ -1,6 +1,6 @@
 {
   "name": "agent-coordinator",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Coordinator skills for Claude Code: split a task, rank each piece, delegate to background agents, steerable sessions or external agent CLIs, get independent review, verify, and report with proof and cost.",
   "author": { "name": "takasurazeem" },
   "homepage": "https://github.com/takasurazeem/agent-coordinator",

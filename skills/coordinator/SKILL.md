@@ -18,14 +18,44 @@ What stays with you, always:
 - **Verification and the final report.** An agent's report is a claim, not a result.
 
 Before first use, load the deferred tools you'll need with ToolSearch, e.g.
-`select:SendMessage,SendUserFile,TaskStop` (kanban tools: see section 8).
+`select:SendMessage,SendUserFile,TaskStop`, plus the board tools in step 0.
+
+## 0. Board first (before planning or dispatching anything)
+
+Do this as soon as the skill starts, in the same message as your first other tool call. It is not
+an optional last step.
+
+1. Load the board tools: `select:mcp__kanban__find_project,mcp__kanban__create_project,mcp__kanban__link_repo,mcp__kanban__list_projects,mcp__kanban__next_item,mcp__kanban__claim_item,mcp__kanban__report_progress,mcp__kanban__create_item,mcp__kanban__comment`.
+   - If they don't resolve, or the first call fails to connect, there's no board. Say so in one line
+     and skip the rest of this step. That's the only way to skip it.
+2. **Find this repo's project.** Each board project lists the code repos it belongs to.
+   - Get the remote with `git remote get-url origin`, or the first remote `git remote` lists if
+     there's no `origin`. Call `find_project` with it. With no remote, or no match, try the folder
+     name too.
+   - **The user named or linked a project** (a board URL like `#/<project>/board` counts): use it.
+     If this repo isn't linked to it, offer to `link_repo` it.
+   - **One match**: use it. **Several**: ask which one.
+   - **None**: ask with a choice: create a project for this repo (`create_project`, linked), or link
+     the repo to an existing one (`link_repo`, from `list_projects`). "Add it to the board" means
+     yes to putting the work on the board, not a choice of project. If which project is unclear,
+     ask. Never create or link one silently.
+3. Take or create the item:
+   - The user named an item: use it.
+   - Otherwise check `next_item` for this project. If nothing fits, `create_item` with the user's
+     request as the title and body.
+   - `claim_item` it with a one-line plan.
+4. After you've planned the split (section 1), create one item per task, with `Parent: #N` in the
+   body, **before** that task's agent or session starts.
+
+**Gate:** no agent or session starts until its item exists on the board, unless step 1 found no
+board. If you notice you skipped this, stop and do it now, then tell the user.
 
 ## 1. Plan the split
 
 1. Restate the goal and what "done" means in a sentence or two. If "done" is unclear, ask.
 2. Break the work into tasks, each with one owner, a clear finish line and its own files.
 3. Mark tasks **independent** (run in parallel) or **dependent** (chain them).
-4. Put the plan on your task list, and on the board if it's connected (section 8).
+4. Put the plan on your task list, and one item per task on the board (step 0.4).
 5. **Budget gate**: before launching more than 3 agents, any T4 or `opus` or max-effort agent, or
    any cloud external model (code leaves the Mac), tell the user the plan with ranks, models and
    providers in a few lines, and let them veto it.
@@ -148,24 +178,12 @@ If a claim doesn't hold, send it back to the author with what you saw.
 
 ## 8. Working from the kanban board
 
-Load `select:mcp__kanban__find_project,mcp__kanban__create_project,mcp__kanban__link_repo,mcp__kanban__list_projects,mcp__kanban__next_item,mcp__kanban__claim_item,mcp__kanban__report_progress,mcp__kanban__create_item,mcp__kanban__comment`.
-If they resolve (an Agentic Kanban board is connected), the board is the queue.
+When step 0 found a board, the board is the queue.
 
-**First, find this repo's project.** Each board project lists the code repos it belongs to.
-- Get the repo's remote with `git remote get-url origin`, or the first remote `git remote` lists
-  if there's no `origin`, and call `find_project` with it. With no remote, or no match, try the
-  folder name too.
-- **One match**: work in that project. **Several**: ask which. **None**: ask the user whether to
-  `create_project` linked to this repo, or `link_repo` it to an existing project from
-  `list_projects`. Never create or link one silently.
-- If the user names a project, use it. If this repo wasn't linked to it yet, offer to `link_repo` it.
-- When the repo you're in isn't the code the item is about, use the item's project's repos instead.
-- If the kanban tools don't resolve, or calls fail to connect, the board isn't reachable. Say so
-  once and carry on without it.
+The project and the items come from step 0. From there:
 
-1. Take the item the user named, or `next_item` with `project` set to this repo's project (add
-   `include_todo: true` to consider unassigned Todo items). `list_items` filters by status **id** (e.g. `todo`), not the column name.
-   `claim_item` it with a one-line plan.
+1. `next_item` takes `project` (and `include_todo: true` for unassigned Todo items). `list_items`
+   filters by status **id** (e.g. `todo`), not the column name.
 2. **Only you change the item's state.** Every MCP process acts as the same actor (`KANBAN_AGENT`,
    default `claude`), so a subagent calling `report_progress` with `needs_review` would move *your*
    item. Subagents may `comment` on it at most; usually you post their progress yourself.
