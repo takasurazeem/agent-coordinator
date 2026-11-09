@@ -1,6 +1,6 @@
 ---
 name: session-coordinator
-description: Coordinate work across separate Claude Code sessions that the user can open, watch and steer - split a task, start one session per piece (each in its own worktree, with a model and effort suited to it), follow their reports, get each branch reviewed, and bring the results together with the user's approval. Use when the user types /session-coordinator or asks for the work to run in sessions they can peek into or steer. For hidden background agents whose results you review and merge yourself, use /coordinator instead. Also covers offloading work to external agents the user names: other agent CLIs and harnesses (e.g. opencode, Gemini CLI, Codex, Aider) and the hosted, self-hosted or local models behind them.
+description: "Coordinate work across separate Claude Code sessions that the user can open, watch and steer - split a task, start one session per piece (each in its own worktree, with a model and effort suited to it), follow their reports, get each branch reviewed, and bring the results together with the user's approval. Use when the user types /session-coordinator or asks for the work to run in sessions they can peek into or steer. For hidden background agents whose results you review and merge yourself, use /coordinator instead. Also covers offloading work to external agents the user names: other agent CLIs and harnesses (e.g. opencode, Gemini CLI, Codex, Aider) and the hosted, self-hosted or local models behind them."
 ---
 
 # Session coordinator
